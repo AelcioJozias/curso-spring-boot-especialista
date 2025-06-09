@@ -14,7 +14,6 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     @Transactional
     public void salvar(Usuario usuario) {
         final var senha = usuario.getSenha();
@@ -24,5 +23,9 @@ public class UsuarioService {
 
     public Usuario obterPorLogin(String login) {
         return usuarioRepository.findByLogin(login);
+    }
+
+    public Usuario obterPorEmail(final String email) {
+        return usuarioRepository.findByEmail(email);
     }
 }

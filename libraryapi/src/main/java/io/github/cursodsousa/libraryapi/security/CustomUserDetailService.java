@@ -8,7 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-
+// como a gente comentou o bean que configura o nosso UserDetailsService esse cara não está mais sendo usado
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
 

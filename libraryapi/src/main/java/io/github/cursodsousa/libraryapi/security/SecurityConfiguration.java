@@ -1,7 +1,6 @@
-package io.github.cursodsousa.libraryapi.config;
+package io.github.cursodsousa.libraryapi.security;
 
 
-import io.github.cursodsousa.libraryapi.security.CustomUserDetailService;
 import io.github.cursodsousa.libraryapi.service.UsuarioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +10,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +31,7 @@ public class SecurityConfiguration {
      * @return SecurityFilterChain
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http, final LoginSocialSuccessHandler loginSocialSuccessHandler) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
@@ -41,7 +41,22 @@ public class SecurityConfiguration {
 
                     authorize.anyRequest().authenticated();
                 })
+                .oauth2Login(oauth2 -> oauth2.successHandler(loginSocialSuccessHandler))
                 .build();
+    }
+
+    /**
+     * Esse bean é usado para remover o prefixo "ROLE_" dos nomes de autoridade.
+     * @return
+     */
+    @Bean
+    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
+        return new GrantedAuthorityDefaults("");
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
     }
 
     /**
@@ -52,13 +67,8 @@ public class SecurityConfiguration {
      * @param usuarioService UsuarioService
      * @return UserDetailsService
      */
-    @Bean
+//    @Bean desativei esse cara aqui depois de criar o CustomAuthenticationProvider. Agora o login vai acontecer lá
     public UserDetailsService userDetailsService(final UsuarioService usuarioService) {
         return new CustomUserDetailService(usuarioService);
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
     }
 }
