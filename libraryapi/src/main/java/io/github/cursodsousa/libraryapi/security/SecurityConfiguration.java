@@ -2,6 +2,7 @@ package io.github.cursodsousa.libraryapi.security;
 
 
 import io.github.cursodsousa.libraryapi.service.UsuarioService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -31,8 +35,17 @@ public class SecurityConfiguration {
      * @return SecurityFilterChain
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(final HttpSecurity http, final LoginSocialSuccessHandler loginSocialSuccessHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(final HttpSecurity http, final LoginSocialSuccessHandler loginSocialSuccessHandler,  CustomAuthenticationEntryPoint entryPoint) throws Exception {
         return http
+                .cors(httpSecurityCorsConfigurer -> {
+                    CorsConfiguration corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:5500"));
+                    corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                    corsConfiguration.setAllowCredentials(true);
+                    corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
+                    httpSecurityCorsConfigurer.configurationSource(request -> corsConfiguration);
+                })
+
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
@@ -42,6 +55,18 @@ public class SecurityConfiguration {
                     authorize.anyRequest().authenticated();
                 })
                 .oauth2Login(oauth2 -> oauth2.successHandler(loginSocialSuccessHandler))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(entryPoint) // <- aqui está a mágica
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout") // URL que o frontend vai chamar
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.sendRedirect("http://localhost:5500/index.html"); // redireciona após logout
+                        })
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                )
                 .build();
     }
 

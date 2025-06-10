@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Welcome!</h1>
+    <p>You are logged in.</p>
+
+    <button onclick="downloadData()" id="downloadButton" style="background-color: rgb(67, 139, 202); padding: 10px;">Download Data</button>
+    <button onclick="logout()" id="logoutButton" style="background-color: rgb(67, 139, 202); padding: 10px;">Logout</button>
+    <script>
+
+        function downloadData() {
+            console.log("Download button clicked");
+            
+            fetch("http://localhost:8080/test", {
+                method: "GET",
+                credentials: "include" // Isso é CRUCIAL para enviar o JSESSIONID
+            }).then(response => {
+                if (response.status === 401) {
+                        alert("Você precisa fazer login.");
+                        window.location.href = "/index.html";
+                    }
+            });
+        }
+
+        function logout(){
+            fetch("http://localhost:8080/logout", {
+            method: "POST",
+            credentials: "include"
+        })
+            .then(response => {
+                if (response.status === 401) {
+    window.location.href = "/index.html";
+}
+                if (response.ok) {
+                    // Redirecionar para a página de login ou feedback de logout
+                    window.location.href = "/index.html";
+                }
+            });
+        }
+        
+
+    </script>
+</body>
+
+</html>

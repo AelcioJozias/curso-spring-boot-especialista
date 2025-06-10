@@ -47,9 +47,7 @@ public class LoginSocialSuccessHandler extends SavedRequestAwareAuthenticationSu
         final CustomAuthentication customAuthentication = new CustomAuthentication(usuario);
 
         SecurityContextHolder.getContext().setAuthentication(customAuthentication);
-
-        super.onAuthenticationSuccess(request, response, customAuthentication);
-
+        response.sendRedirect("http://localhost:5500/logado.html");
     }
 
     private Usuario cadastrarUsuarioNaBase(final String email) {
